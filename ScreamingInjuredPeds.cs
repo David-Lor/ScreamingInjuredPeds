@@ -1,6 +1,7 @@
 ﻿/*              SCREAMING INJURED PEDS                     *
  *      a GTA V script made by EnforcerZhukov              *
- * www.enforcerzhukov.xyz | www.youtube.com/enforcerzhukov */
+ *    https://github.com/David-Lor/ScreamingInjuredPeds    */
+
 using GTA;
 using GTA.Native;
 using System;
@@ -8,12 +9,16 @@ using System.Collections.Generic;
 
 public class ScreamingInjuredPeds : Script
 {
+    // Settings
+    private bool setBlipsOnInjuredPeds = false;
+    private int cooldown = 5; //cooldown timer
+
+    // Internal variables 
     private List<Ped> injured = new List<Ped>();
     private List<Ped> injuredRmv = new List<Ped>();
     private List<DateTime> execTime = new List<DateTime>();
     private Random r = new Random();
     private DateTime firstDT;
-    private int cooldown = 5; //cooldown timer
     private TimeSpan diff;
 
     public ScreamingInjuredPeds()
@@ -66,12 +71,14 @@ public class ScreamingInjuredPeds : Script
                         GTA.Native.Function.Call(GTA.Native.Hash.PLAY_PAIN, p, 8, 1.0f, 0);
                         GTA.Native.Function.Call(GTA.Native.Hash.PLAY_FACIAL_ANIM, p, "burning_1", faciallib);
                     }
-                    if ( (!p.CurrentBlip.Exists()) || (p.CurrentBlip.Sprite != BlipSprite.Dead) ) {
-                        p.CurrentBlip.Remove();
-                        p.AddBlip();
-                        p.CurrentBlip.Sprite = BlipSprite.Dead;
-                        p.CurrentBlip.Color = BlipColor.Yellow;
-                        p.CurrentBlip.Name = "Laying injured ped";
+                    if (setBlipsOnInjuredPeds) {
+                        if ( (!p.CurrentBlip.Exists()) || (p.CurrentBlip.Sprite != BlipSprite.Dead) ) {
+                            p.CurrentBlip.Remove();
+                            p.AddBlip();
+                            p.CurrentBlip.Sprite = BlipSprite.Dead;
+                            p.CurrentBlip.Color = BlipColor.Yellow;
+                            p.CurrentBlip.Name = "Laying injured ped";
+                        }
                     }
                     execTime[pIndex] = dtNow; //Update the datetime on the List with the latest trigger execution.
                 } //end of "first"/cooldown time ok.
@@ -83,7 +90,9 @@ public class ScreamingInjuredPeds : Script
             execTime.RemoveAt(injured.IndexOf(p));
             injured.Remove(p);
             GTA.Native.Function.Call(GTA.Native.Hash.DISABLE_PED_PAIN_AUDIO, p, true);
-            p.CurrentBlip.Remove();
+            if (setBlipsOnInjuredPeds) {
+                p.CurrentBlip.Remove();
+            }
         }
         injuredRmv.Clear();
 
